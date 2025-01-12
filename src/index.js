@@ -1,8 +1,8 @@
 import './pages/index.css'
+import { initialCards } from './scripts/cards.js'
 
+console.log('test')
 const cardElementList = document.querySelector('.places__list')
-
-console.log('asdasdasd')
 
 const selectCardItems = () => {
 	const cardTemplate = document.querySelector('#card-template').content

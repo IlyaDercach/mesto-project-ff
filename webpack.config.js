@@ -19,23 +19,17 @@ module.exports = {
 	},
 	module: {
 		rules: [
-			// rules — это массив правил
-			// добавим в него объект правил для бабеля
 			{
 				test: /\.js$/,
 				use: 'babel-loader',
 				exclude: '/node_modules/'
 			},
 			{
-				// регулярное выражение, которое ищет все файлы с такими расширениями
 				test: /\.(png|svg|jpg|gif|woff(2)?|eot|ttf|otf)$/,
 				type: 'asset/resource'
 			},
 			{
-				// применять это правило только к CSS-файлам
 				test: /\.css$/,
-				// при обработке этих файлов нужно использовать
-				// MiniCssExtractPlugin.loader и css-loader
 				use: [
 					MiniCssExtractPlugin.loader,
 					{
@@ -49,7 +43,7 @@ module.exports = {
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
-			template: './src/index.html' // путь к файлу index.html
+			template: './src/index.html'
 		}),
 		new CleanWebpackPlugin(),
 		new MiniCssExtractPlugin()
