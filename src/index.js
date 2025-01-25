@@ -2,10 +2,8 @@ import './pages/index.css'
 import { initialCards } from './scripts/cards.js'
 import { initialRenderCard, renderNewCard } from './scripts/card/card'
 import {
-	animatePopup,
+	setClosePopupEventListeners,
 	closePopup,
-	handleCloseKey,
-	handleCloseOverlay,
 	openPopup
 } from './scripts/popup/modal'
 
@@ -16,25 +14,12 @@ const popupEditElement = document.querySelector('.popup_type_edit')
 const popupCreateElement = document.querySelector('.popup_type_new-card')
 const popups = document.querySelectorAll('.popup')
 
-const popupEdit = (popup, openTrigger, form) => {
-	const closeTrigger = popup.querySelector('.popup__close')
-
+const openPopupEdit = (popup, openTrigger, form) => {
 	openTrigger.addEventListener('click', () => openPopup(popup))
-
-	closeTrigger.addEventListener('click', () => closePopup(popup))
-
-	document.addEventListener('keydown', e =>
-		handleCloseKey(e, () => closePopup(popup))
-	)
-
-	popup.addEventListener('click', e =>
-		handleCloseOverlay(e, popup, () => closePopup(popup))
-	)
-
 	form()
 }
 
-const popupEditForm = () => {
+const createPopupEditForm = () => {
 	const formElement = document.querySelector('form[name="edit-profile"]')
 	const nameInput = document.querySelector('.popup__input_type_name')
 	const jobInput = document.querySelector('.popup__input_type_description')
@@ -57,24 +42,12 @@ const popupEditForm = () => {
 	formElement.addEventListener('submit', handleFormSubmit)
 }
 
-const createPopup = (popup, openTrigger, form) => {
-	const closeTrigger = popup.querySelector('.popup__close')
-
+const openPopupCreate = (popup, openTrigger, form) => {
 	openTrigger.addEventListener('click', () => openPopup(popup))
-	closeTrigger.addEventListener('click', () => closePopup(popup))
-
-	document.addEventListener('keydown', e =>
-		handleCloseKey(e, () => closePopup(popup))
-	)
-
-	popup.addEventListener('click', e =>
-		handleCloseOverlay(e, popup, () => closePopup(popup))
-	)
-
 	form()
 }
 
-const popupCreateForm = () => {
+const createPopupCreateForm = () => {
 	const formElement = document.querySelector('form[name="new-place"]')
 	const nameInput = document.querySelector('.popup__input_type_card-name')
 	const linkInput = document.querySelector('.popup__input_type_url')
@@ -89,7 +62,7 @@ const popupCreateForm = () => {
 			link
 		}
 
-		renderNewCard(data, popupImage)
+		renderNewCard(data, openPopupImage)
 		formElement.reset()
 		closePopup(popupCreateElement)
 	}
@@ -97,11 +70,10 @@ const popupCreateForm = () => {
 	formElement.addEventListener('submit', handleFormSubmit)
 }
 
-const popupImage = (openTrigger, image, caption) => {
+const openPopupImage = (openTrigger, image, caption) => {
 	const popup = document.querySelector('.popup_type_image')
 	const imagePopupElement = popup.querySelector('.popup__image')
 	const captionPopupElement = popup.querySelector('.popup__caption')
-	const closeTrigger = popup.querySelector('.popup__close')
 
 	openTrigger.addEventListener('click', () => {
 		openPopup(popup)
@@ -109,20 +81,16 @@ const popupImage = (openTrigger, image, caption) => {
 		imagePopupElement.alt = caption
 		captionPopupElement.textContent = caption
 	})
-	closeTrigger.addEventListener('click', () => closePopup(popup))
-
-	document.addEventListener('keydown', e =>
-		handleCloseKey(e, () => closePopup(popup))
-	)
-
-	popup.addEventListener('click', e =>
-		handleCloseOverlay(e, popup, () => closePopup(popup))
-	)
 }
 
 initialCards.forEach(card => {
-	initialRenderCard(card, popupImage)
+	initialRenderCard(card, openPopupImage)
 })
-animatePopup(popups)
-popupEdit(popupEditElement, openPopupEditButton, popupEditForm)
-createPopup(popupCreateElement, openPopupCreateButton, popupCreateForm)
+
+setClosePopupEventListeners(popups)
+openPopupEdit(popupEditElement, openPopupEditButton, createPopupEditForm)
+openPopupCreate(
+	popupCreateElement,
+	openPopupCreateButton,
+	createPopupCreateForm
+)
