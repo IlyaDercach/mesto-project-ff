@@ -26,11 +26,9 @@ const createPopupEditForm = () => {
 	const profileNameElement = document.querySelector('.profile__title')
 	const profileJobElement = document.querySelector('.profile__description')
 
-	nameInput.value = profileNameElement.textContent
-	jobInput.value = profileJobElement.textContent
-
 	function handleFormSubmit(e) {
 		e.preventDefault()
+
 		const name = nameInput.value
 		const job = jobInput.value
 
@@ -61,9 +59,8 @@ const createPopupCreateForm = () => {
 			name,
 			link
 		}
-
-		renderNewCard(data, openPopupImage)
 		formElement.reset()
+		renderNewCard(data, openPopupImage)
 		closePopup(popupCreateElement)
 	}
 
