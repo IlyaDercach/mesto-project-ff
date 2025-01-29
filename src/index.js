@@ -15,16 +15,33 @@ const popupCreateElement = document.querySelector('.popup_type_new-card')
 const popups = document.querySelectorAll('.popup')
 
 const openPopupEdit = (popup, openTrigger, form) => {
-	openTrigger.addEventListener('click', () => openPopup(popup))
-	form()
-}
-
-const createPopupEditForm = () => {
-	const formElement = document.querySelector('form[name="edit-profile"]')
 	const nameInput = document.querySelector('.popup__input_type_name')
 	const jobInput = document.querySelector('.popup__input_type_description')
 	const profileNameElement = document.querySelector('.profile__title')
 	const profileJobElement = document.querySelector('.profile__description')
+
+	const fillInputValueOfEditForm = () => {
+		if (nameInput && jobInput && profileNameElement && profileJobElement) {
+			nameInput.value = profileNameElement.textContent
+			jobInput.value = profileJobElement.textContent
+		}
+	}
+
+	openTrigger.addEventListener('click', () => {
+		fillInputValueOfEditForm(popup)
+		openPopup(popup)
+	})
+
+	form(nameInput, jobInput, profileNameElement, profileJobElement)
+}
+
+const createPopupEditForm = (
+	nameInput,
+	jobInput,
+	profileNameElement,
+	profileJobElement
+) => {
+	const formElement = document.querySelector('form[name="edit-profile"]')
 
 	function handleFormSubmit(e) {
 		e.preventDefault()
