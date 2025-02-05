@@ -72,9 +72,6 @@ export function enableValidation(option) {
 	})
 }
 
-// очистка ошибок валидации вызовом clearValidation очищает ошибки валидации формы и делает кнопку неактивной
-// параметры DOM-элемент формы, для которой очищаются ошибки валидации и объект с настройками валидации. Используйте функцию clearValidation при заполнении формы профиля во время её открытия и при очистке формы добавления карточки.
-
 export const clearValidation = (formElement, option) => {
 	const { inputSelector, submitButtonSelector, inputErrorClass, errorClass } =
 		option

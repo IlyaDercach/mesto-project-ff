@@ -105,12 +105,105 @@ const openPopupImage = (openTrigger, image, caption) => {
 	})
 }
 // INITIAL
-initialCards.forEach(card => {
-	initialRenderCard(card, openPopupImage)
-})
+// initialCards.forEach(card => {
+// 	initialRenderCard(card, openPopupImage)
+// })
 
 setClosePopupEventListeners(popups)
 openPopupEdit(popupEditElement, openPopupEditButton)
 openPopupCreate(popupCreateElement, openPopupCreateButton)
 
 enableValidation(validationOptions)
+
+// API -------------------------------------------------------------------------------
+
+// FETCH CARDS
+const fetchCards = () => {
+	fetch('https://mesto.nomoreparties.co/v1/wff-cohort-31/cards', {
+		headers: {
+			authorization: '9dfd7803-ba42-4cdf-9792-1877bab2e321'
+		}
+	})
+		.then(response => response.json())
+		.then(data => {
+			setCards(data)
+		})
+}
+
+// FETCH USER
+const fetchUser = () => {
+	fetch('https://mesto.nomoreparties.co/v1/wff-cohort-31/users/me', {
+		headers: {
+			authorization: '9dfd7803-ba42-4cdf-9792-1877bab2e321'
+		}
+	})
+		.then(response => response.json())
+		.then(data => {
+			setUserProfile(data)
+		})
+}
+
+// PATCH USER
+const patchUser = () => {
+	fetch('https://mesto.nomoreparties.co/v1/wff-cohort-31/users/me', {
+		method: 'PATCH',
+		headers: {
+			authorization: '9dfd7803-ba42-4cdf-9792-1877bab2e321',
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			name: 'Gojo Satory',
+			about: 'Аниме шиз'
+		})
+	})
+		.then(response => response.json())
+		.then(data => {
+			// setUserProfile(data)
+			console.log(data)
+		})
+}
+// patchUser()
+
+// POST CARD
+const postUser = () => {
+	fetch('https://mesto.nomoreparties.co/v1/wff-cohort-31/cards', {
+		method: 'POST',
+		headers: {
+			authorization: '9dfd7803-ba42-4cdf-9792-1877bab2e321',
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			name: 'nobara kygisaki',
+			link: 'https://i.pinimg.com/736x/de/1d/9a/de1d9aeecb39dc80f9e97e6eddb7cc6f.jpg'
+		})
+	})
+		.then(response => response.json())
+		.then(data => {
+			console.log(data)
+		})
+}
+
+Promise.all([fetchCards, fetchUser]).then(results => {
+	// console.log(results)
+	results[0]()
+	results[1]()
+})
+
+const setUserProfile = user => {
+	const { name, about, avatar, _id } = user
+	const profileNameElement = document.querySelector('.profile__title')
+	const profileJobElement = document.querySelector('.profile__description')
+	const profileAvatarImageElement = document.querySelector('.profile__image')
+
+	profileNameElement.textContent = name
+	profileJobElement.textContent = about
+	profileAvatarImageElement.style.backgroundImage = `url(${avatar})`
+	profileAvatarImageElement.alt = _id
+}
+
+const setCards = cards => {
+	// console.log(cards)
+	cards.forEach(card => {
+		initialRenderCard(card, openPopupImage)
+	})
+}

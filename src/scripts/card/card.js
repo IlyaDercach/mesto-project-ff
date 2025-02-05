@@ -21,22 +21,29 @@ export const createCard = (template, data, deleteCard, like, popup) => {
 	cardImageElement.alt = name
 	cardTitleElement.textContent = name
 
+	const likeCounterWrapperElement = cardElement.querySelector(
+		'.card__like-counter-wrapper'
+	)
+	likeCounterWrapperElement.setAttribute(
+		'style',
+		'display: flex; flex-direction: column; align-items: center; gap: 2px'
+	)
+	const likeCounter = (document.createElement('div').textContent = '0')
+	cardLikeButtonElement.after(likeCounter)
+
 	deleteCard(cardDeleteButtonElement, cardElement)
 	like(cardLikeButtonElement)
-	// popup(cardImageElement, cardTitleElement.textContent)
 	popup(cardImageElement, cardImageElement, cardTitleElement.textContent)
 
 	return cardElement
 }
 
-// popup image
 export const initialRenderCard = (card, popup) => {
 	cardElementList.append(
 		createCard(getTemplate, card, deleteCard, likeCard, popup)
 	)
 }
 
-// popup image
 export const renderNewCard = (data, popup) => {
 	cardElementList.prepend(
 		createCard(getTemplate, data, deleteCard, likeCard, popup)
