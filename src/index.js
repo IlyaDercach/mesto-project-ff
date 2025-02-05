@@ -8,6 +8,7 @@ import {
 } from './scripts/popup/modal'
 import { clearValidation, enableValidation } from './scripts/validation'
 
+const cardElementList = document.querySelector('.places__list')
 const validationOptions = {
 	formSelector: '.popup__form',
 	inputSelector: '.popup__input',
@@ -83,7 +84,9 @@ const openPopupCreate = (popup, openTrigger, form) => {
 			link
 		}
 		formElement.reset()
-		renderNewCard(data, openPopupImage)
+		// renderNewCard(data, openPopupImage)
+		createCard(data)
+		// fetchCards()
 		closePopup(popupCreateElement)
 		clearValidation(formElement, validationOptions)
 	}
@@ -126,7 +129,9 @@ const fetchCards = () => {
 	})
 		.then(response => response.json())
 		.then(data => {
+			cardElementList.innerHTML = ''
 			setCards(data)
+			console.log(data)
 		})
 }
 
@@ -144,7 +149,7 @@ const fetchUser = () => {
 }
 
 // PATCH USER
-const patchUser = () => {
+const editUser = () => {
 	fetch('https://mesto.nomoreparties.co/v1/wff-cohort-31/users/me', {
 		method: 'PATCH',
 		headers: {
@@ -162,31 +167,111 @@ const patchUser = () => {
 			console.log(data)
 		})
 }
-// patchUser()
 
-// POST CARD
-const postUser = () => {
-	fetch('https://mesto.nomoreparties.co/v1/wff-cohort-31/cards', {
-		method: 'POST',
-		headers: {
-			authorization: '9dfd7803-ba42-4cdf-9792-1877bab2e321',
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({
-			name: 'nobara kygisaki',
-			link: 'https://i.pinimg.com/736x/de/1d/9a/de1d9aeecb39dc80f9e97e6eddb7cc6f.jpg'
+// CREATE CARD
+export const createCard = async data => {
+	try {
+		const { name, link } = data
+		return await fetch(
+			'https://mesto.nomoreparties.co/v1/wff-cohort-31/cards',
+			{
+				method: 'POST',
+				headers: {
+					authorization: '9dfd7803-ba42-4cdf-9792-1877bab2e321',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					name,
+					link
+				})
+			}
+		)
+			.then(response => {
+				if (response.ok) {
+					return response.json()
+				}
+			})
+			.then(data => {
+				console.log(data)
+				// renderNewCard(data, openPopupImage)
+				fetchCards()
+			})
+	} catch (error) {
+		throw new Error(`Request Error: ${error?.status} ${error?.message}`)
+	}
+}
+
+// DELETE CARD
+export const removeCard = async id => {
+	try {
+		return await fetch(
+			`https://mesto.nomoreparties.co/v1/wff-cohort-31/cards/${id}`,
+			{
+				method: 'DELETE',
+				headers: {
+					authorization: '9dfd7803-ba42-4cdf-9792-1877bab2e321'
+				}
+			}
+		)
+			.then(res => {
+				if (res.ok) {
+					return res.json()
+				}
+			})
+			.then(() => {
+				fetchCards()
+			})
+	} catch (error) {
+		throw new Error(`Request Error: ${error?.status} ${error?.message}`)
+	}
+}
+
+// SET LIKE CARD LIKE
+export const setLikeCard = async id => {
+	try {
+		return await fetch(
+			`https://mesto.nomoreparties.co/v1/wff-cohort-31/cards/likes/${id}`,
+			{
+				method: 'PUT',
+				headers: {
+					authorization: '9dfd7803-ba42-4cdf-9792-1877bab2e321'
+				}
+			}
+		).then(res => {
+			if (res.ok) {
+				// console.log(res.json())
+				return res.json()
+			}
 		})
-	})
-		.then(response => response.json())
-		.then(data => {
-			console.log(data)
+	} catch (error) {
+		throw new Error(`Request Error: ${error?.status} ${error?.message}`)
+	}
+}
+
+// REMOVE LIKE CARD LIKE
+export const removeLikeCard = async id => {
+	try {
+		return await fetch(
+			`https://mesto.nomoreparties.co/v1/wff-cohort-31/cards/likes/${id}`,
+			{
+				method: 'DELETE',
+				headers: {
+					authorization: '9dfd7803-ba42-4cdf-9792-1877bab2e321'
+				}
+			}
+		).then(res => {
+			if (res.ok) {
+				return res.json()
+			}
 		})
+	} catch (error) {
+		throw new Error(`Request Error: ${error?.status} ${error?.message}`)
+	}
 }
 
 Promise.all([fetchCards, fetchUser]).then(results => {
-	// console.log(results)
-	results[0]()
 	results[1]()
+	results[0]()
 })
 
 const setUserProfile = user => {
@@ -202,7 +287,7 @@ const setUserProfile = user => {
 }
 
 const setCards = cards => {
-	// console.log(cards)
+	// cardElementList.innerHTML = ''
 	cards.forEach(card => {
 		initialRenderCard(card, openPopupImage)
 	})
