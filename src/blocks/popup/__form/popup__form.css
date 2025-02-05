@@ -1,6 +1,13 @@
 .popup__form {
   margin-top: 27px;
 }
+.popup__form > div {
+  margin-bottom: 10px;
+}
+
+.popup__form > div:last-of-type {
+  margin: 0;
+}
 
 .popup__input.form__input_type_error {
   border-bottom: 1px solid red;
@@ -14,5 +21,5 @@
   color: #ff0000;
   font-size: 12px;
   font-weight: 400;
-  /*margin-block-start: 5px;*/
+  margin-block-start: 5px;
 }

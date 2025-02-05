@@ -13,7 +13,6 @@ const hideInputError = (option, formElement, inputElement) => {
 }
 
 const isValid = (option, formElement, inputElement) => {
-	console.log(inputElement.validity.patternMismatch)
 	if (inputElement.validity.patternMismatch) {
 		inputElement.setCustomValidity(inputElement.dataset.errorMessage)
 	} else {
@@ -77,25 +76,18 @@ export function enableValidation(option) {
 // параметры DOM-элемент формы, для которой очищаются ошибки валидации и объект с настройками валидации. Используйте функцию clearValidation при заполнении формы профиля во время её открытия и при очистке формы добавления карточки.
 
 export const clearValidation = (formElement, option) => {
-	const inputList = Array.from(
-		formElement.querySelectorAll(`${option.inputSelector}`)
-	)
-	const buttonElement = formElement.querySelector(
-		`${option.submitButtonSelector}`
-	)
+	const { inputSelector, submitButtonSelector, inputErrorClass, errorClass } =
+		option
+
+	const inputList = Array.from(formElement.querySelectorAll(`${inputSelector}`))
+	const buttonElement = formElement.querySelector(`${submitButtonSelector}`)
 
 	inputList.forEach(inputElement => {
-		// if (!inputElement.validity.valid) {
-		// 	isValid(option, formElement, inputElement)
-		// 	toggleButtonState(option, inputList, buttonElement)
-		// } else {
-		// 	isValid(option, formElement, inputElement)
-		// }
-		toggleButtonState(option, inputList, buttonElement)
 		const errorElement = formElement.querySelector(`.${inputElement.id}-error`)
+		toggleButtonState(option, inputList, buttonElement)
 		inputElement.setCustomValidity('')
-		inputElement.classList.remove(`${option.inputErrorClass}`)
-		errorElement.classList.remove(`${option.errorClass}`)
+		inputElement.classList.remove(`${inputErrorClass}`)
+		errorElement.classList.remove(`${errorClass}`)
 		errorElement.textContent = ''
 	})
 }
