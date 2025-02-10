@@ -19,6 +19,16 @@
   cursor: pointer;
 }
 
+.button_inactive {
+  background-color: inherit;
+  color: rgba(0, 0, 0, .2);
+  outline: 1px solid rgba(0, 0, 0, .2);;
+}
+
+.button_inactive:hover {
+  background: inherit;
+}
+
 @media screen and (max-width: 568px) {
   .popup__button {
     font-size: 14px;
