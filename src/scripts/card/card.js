@@ -1,9 +1,7 @@
-import { removeCard, removeLikeCard, setLikeCard, updateCards } from '../api'
+import { removeCard, removeLikeCard, setLikeCard } from '../api'
 import { closePopup, openPopup } from '../popup/modal'
 
-const cardElementList = document.querySelector('.places__list')
-
-const getTemplate = () => {
+export const getTemplate = () => {
 	return document
 		.querySelector('#card-template')
 		.content.querySelector('.card')
@@ -11,7 +9,7 @@ const getTemplate = () => {
 }
 
 export const createCard = (
-	template,
+	getTemplate,
 	data,
 	deleteCard,
 	like,
@@ -19,7 +17,7 @@ export const createCard = (
 	userId
 ) => {
 	const { name, link, likes, _id, owner } = data
-	const cardElement = template()
+	const cardElement = getTemplate()
 	const cardImageElement = cardElement.querySelector('.card__image')
 	const cardTitleElement = cardElement.querySelector('.card__title')
 	const cardDeleteButtonElement = cardElement.querySelector(
@@ -31,93 +29,57 @@ export const createCard = (
 	cardImageElement.src = link
 	cardImageElement.alt = name
 	cardTitleElement.textContent = name
-	userId === owner._id
-		? (cardDeleteButtonElement.style.display = 'block')
-		: (cardDeleteButtonElement.style.display = 'none')
+	cardDeleteButtonElement.style.display =
+		userId === owner._id ? 'block' : 'none'
 	likeCounter.textContent = likes?.length || 0
 	cardLikeButtonElement.after(likeCounter)
 
-	deleteCard(cardDeleteButtonElement, _id, userId, popupImage, cardElement)
+	cardDeleteButtonElement.addEventListener('click', () => {
+		deleteCard(_id, cardElement)
+	})
 
-	like(cardLikeButtonElement, _id, likes, likeCounter, userId)
+	if (likes.some(like => like._id === userId)) {
+		cardLikeButtonElement.classList.add('card__like-button_is-active')
+	}
 
-	popupImage(cardImageElement, cardImageElement, cardTitleElement.textContent)
+	cardLikeButtonElement.addEventListener('click', () => {
+		like(cardLikeButtonElement, _id, likeCounter)
+	})
+
+	cardImageElement.addEventListener('click', () => {
+		popupImage(cardImageElement, cardTitleElement.textContent)
+	})
 
 	return cardElement
 }
 
-export const initialRenderCard = (card, popupImage, userId) => {
-	cardElementList.append(
-		createCard(getTemplate, card, deleteCard, likeCard, popupImage, userId)
-	)
-}
-
-export const renderNewCard = (card, popupImage, userId) => {
-	cardElementList.prepend(
-		createCard(getTemplate, card, deleteCard, likeCard, popupImage, userId)
-	)
-}
-
-export const deleteCard = (
-	deleteButton,
-	id,
-	userId,
-	popupImage,
-	cardElement
-) => {
+export const deleteCard = (id, cardElement) => {
 	const popupConfirm = document.querySelector('.popup_type_delete-card')
 	const confirmDeleteButton = popupConfirm.querySelector('.popup__button')
-	let cardID = ''
-	let isConfirmed = false
 
-	deleteButton.addEventListener('click', e => {
-		if (e.target === deleteButton) {
-			cardID = id
-			openPopup(popupConfirm)
-		}
-	})
+	openPopup(popupConfirm)
 
-	const closeConfirmPopup = () => {
-		isConfirmed = true
-		if (cardID === id && isConfirmed) {
-			removeCard(id)
-				.then(data => {
-					cardElement.remove()
-				})
-				.finally(() => {
-					updateCards(popupImage, userId)
-				})
-			closePopup(popupConfirm)
-			isConfirmed = false
-			confirmDeleteButton.removeEventListener('click', closeConfirmPopup)
-		}
+	confirmDeleteButton.onclick = () => {
+		removeCard(id)
+			.then(() => {
+				cardElement.remove()
+				closePopup(popupConfirm)
+			})
+			.catch(err => console.log(err))
 	}
-	confirmDeleteButton.addEventListener('click', closeConfirmPopup)
 }
 
-export const likeCard = (likeButton, id, likes, likeCounter, userId) => {
-	likes.forEach(like => {
-		if (like._id === userId) {
-			likeButton.classList.add('card__like-button_is-active')
-		}
-	})
+export const likeCard = (likeButton, id, likeCounter) => {
+	const likeMethod = likeButton.classList.contains(
+		'card__like-button_is-active'
+	)
+		? removeLikeCard
+		: setLikeCard
 
-	likeButton.addEventListener('click', e => {
-		if (
-			e.target === likeButton &&
-			e.target.classList.contains('card__like-button')
-		) {
-			if (!e.target.classList.contains('card__like-button_is-active')) {
-				setLikeCard(id).then(data => {
-					likeCounter.textContent = data.likes.length
-					e.target.classList.add('card__like-button_is-active')
-				})
-			} else {
-				removeLikeCard(id).then(data => {
-					likeCounter.textContent = data.likes.length
-					e.target.classList.remove('card__like-button_is-active')
-				})
-			}
-		}
-	})
+	likeMethod(id)
+		.then(data => {
+			likeCounter.textContent = data.likes.length
+			likeButton.classList.toggle('card__like-button_is-active')
+		})
+		.catch(err => console.log(err))
 }

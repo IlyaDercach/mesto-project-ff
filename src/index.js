@@ -1,5 +1,10 @@
 import './pages/index.css'
-import { initialRenderCard, renderNewCard } from './scripts/card/card'
+import {
+	createCard,
+	deleteCard,
+	getTemplate,
+	likeCard
+} from './scripts/card/card'
 import {
 	closePopup,
 	openPopup,
@@ -11,11 +16,10 @@ import {
 	editProfileAvatar,
 	editUser,
 	fetchCards,
-	fetchUser,
-	setUserProfile
+	fetchUser
 } from './scripts/api'
 
-const validationOptions = {
+export const validationOptions = {
 	formSelector: '.popup__form',
 	inputSelector: '.popup__input',
 	submitButtonSelector: '.popup__button',
@@ -33,9 +37,10 @@ const popupEditElement = document.querySelector('.popup_type_edit')
 const popupCreateElement = document.querySelector('.popup_type_new-card')
 const popupEditAvatar = document.querySelector('.popup_type_new-avatar')
 const popups = document.querySelectorAll('.popup')
+const cardElementList = document.querySelector('.places__list')
 
 // EDIT POPUP
-const openPopupEdit = (popup, openTrigger) => {
+const setupPopupEdit = (popup, openTrigger) => {
 	const formElement = document.querySelector('form[name="edit-profile"]')
 	const nameInput = document.querySelector('.popup__input_type_name')
 	const jobInput = document.querySelector('.popup__input_type_description')
@@ -66,6 +71,7 @@ const openPopupEdit = (popup, openTrigger) => {
 			.then(user => {
 				setUserProfile(user)
 			})
+			.catch(err => console.log(err))
 			.finally(() => {
 				isLoading(saveButtonElement, false)
 				closePopup(popupEditElement)
@@ -76,16 +82,13 @@ const openPopupEdit = (popup, openTrigger) => {
 }
 
 // CREATE POPUP
-const openPopupCreate = (popup, openTrigger) => {
+const setupPopupCreate = (popup, openTrigger) => {
 	const formElement = document.querySelector('form[name="new-place"]')
 	const nameInput = document.querySelector('.popup__input_type_card-name')
 	const linkInput = document.querySelector('.popup__input_type_url')
 	const saveButtonElement = formElement.querySelector('.popup__button')
 
 	openTrigger.addEventListener('click', () => {
-		if (nameInput.value === '') {
-			saveButtonElement.classList.add('button_inactive')
-		}
 		openPopup(popup)
 	})
 
@@ -102,13 +105,14 @@ const openPopupCreate = (popup, openTrigger) => {
 		isLoading(saveButtonElement, true)
 		createNewCard(data)
 			.then(dataCard => {
-				renderNewCard(dataCard, openPopupImage, userId)
+				renderNewCard(dataCard, setupPopupImage, userId)
 			})
+			.catch(err => console.log(err))
 			.finally(() => {
+				clearValidation(formElement, validationOptions)
 				isLoading(saveButtonElement, false)
 				formElement.reset()
 				closePopup(popupCreateElement)
-				clearValidation(formElement, validationOptions)
 			})
 	}
 
@@ -116,29 +120,24 @@ const openPopupCreate = (popup, openTrigger) => {
 }
 
 // PICTURE POPUP
-const openPopupImage = (openTrigger, image, caption) => {
+const setupPopupImage = (image, caption) => {
 	const popup = document.querySelector('.popup_type_image')
 	const imagePopupElement = popup.querySelector('.popup__image')
 	const captionPopupElement = popup.querySelector('.popup__caption')
 
-	openTrigger.addEventListener('click', () => {
-		openPopup(popup)
-		imagePopupElement.src = image.src
-		imagePopupElement.alt = caption
-		captionPopupElement.textContent = caption
-	})
+	openPopup(popup)
+	imagePopupElement.src = image.src
+	imagePopupElement.alt = caption
+	captionPopupElement.textContent = caption
 }
 
 // AVATAR POPUP
-const openPopupEditAvatar = (popup, openTrigger) => {
+const setupPopupEditAvatar = (popup, openTrigger) => {
 	const formElement = document.querySelector('form[name="new-avatar"]')
 	const linkInput = formElement.querySelector('.popup__input_type_url')
 	const saveButtonElement = formElement.querySelector('.popup__button')
 
 	openTrigger.addEventListener('click', () => {
-		if (linkInput.value === '') {
-			saveButtonElement.classList.add('button_inactive')
-		}
 		openPopup(popup)
 	})
 
@@ -152,24 +151,35 @@ const openPopupEditAvatar = (popup, openTrigger) => {
 
 		isLoading(saveButtonElement, true)
 		editProfileAvatar(data.link)
-			.then(() => {
-				fetchUser().then(user => {
-					setUserProfile(user)
-				})
+			.then(user => {
+				setUserProfile(user)
 			})
+			.catch(err => console.log(err))
 			.finally(() => {
+				clearValidation(formElement, validationOptions)
 				isLoading(saveButtonElement, false)
 				formElement.reset()
 				closePopup(popupEditAvatar)
-				clearValidation(formElement, validationOptions)
 			})
 	}
 
 	formElement.addEventListener('submit', handleFormSubmit)
 }
 
+export const initialRenderCard = (card, popupImage, userId) => {
+	cardElementList.append(
+		createCard(getTemplate, card, deleteCard, likeCard, popupImage, userId)
+	)
+}
+
+export const renderNewCard = (card, popupImage, userId) => {
+	cardElementList.prepend(
+		createCard(getTemplate, card, deleteCard, likeCard, popupImage, userId)
+	)
+}
+
 const isLoading = (btn, load = false) => {
-	load ? (btn.textContent = 'Сохранение...') : (btn.textContent = 'Сохранить')
+	btn.textContent = load ? 'Сохранение...' : 'Сохранить'
 }
 
 const showErrorUploadingCards = () => {
@@ -179,26 +189,33 @@ const showErrorUploadingCards = () => {
 	document.querySelector('.places').append(errMessElement)
 }
 
-Promise.all([fetchUser(), fetchCards()]).then(responses => {
-	responses.forEach(data => {
-		if (!Array.isArray(data)) {
-			setUserProfile(data)
-			userId = data._id
-		} else {
-			if (data && userId) {
-				data?.forEach(card => {
-					initialRenderCard(card, openPopupImage, userId)
-				})
-			} else {
-				showErrorUploadingCards()
-			}
-		}
-	})
+export const setUserProfile = user => {
+	const { name, about, avatar } = user
+	const profileNameElement = document.querySelector('.profile__title')
+	const profileJobElement = document.querySelector('.profile__description')
+	const profileAvatarImageElement = document.querySelector('.profile__image')
+
+	profileNameElement.textContent = name
+	profileJobElement.textContent = about
+	profileAvatarImageElement.style.backgroundImage = `url(${avatar})`
+	profileAvatarImageElement.alt = `${about} ${name}`
+}
+
+Promise.all([fetchUser(), fetchCards()]).then(([user, cards]) => {
+	setUserProfile(user)
+	userId = user._id
+
+	if (cards && userId) {
+		cards?.forEach(card => {
+			initialRenderCard(card, setupPopupImage, userId)
+		})
+	} else {
+		showErrorUploadingCards()
+	}
 })
 
-setClosePopupEventListeners(popups)
-openPopupEdit(popupEditElement, openPopupEditButton)
-openPopupCreate(popupCreateElement, openPopupCreateButton)
-openPopupEditAvatar(popupEditAvatar, openPopupEditAvatarButton)
-
 enableValidation(validationOptions)
+setClosePopupEventListeners(popups)
+setupPopupEdit(popupEditElement, openPopupEditButton)
+setupPopupCreate(popupCreateElement, openPopupCreateButton)
+setupPopupEditAvatar(popupEditAvatar, openPopupEditAvatarButton)
