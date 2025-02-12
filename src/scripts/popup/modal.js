@@ -1,3 +1,6 @@
+import { clearValidation } from '../validation'
+import { validationOptions } from '../../index'
+
 export const setClosePopupEventListeners = popups => {
 	popups.forEach(popup => {
 		popup.classList.add('popup_is-animated')
@@ -18,6 +21,9 @@ export const closePopup = popup => {
 	if (popup.classList.contains('popup_is-opened')) {
 		popup.classList.remove('popup_is-opened')
 		document.removeEventListener('keydown', handleCloseKey)
+		if (popup.querySelector('.popup__form')) {
+			clearValidation(popup.querySelector('.popup__form'), validationOptions)
+		}
 	}
 }
 
